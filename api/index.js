@@ -49,7 +49,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "http://localhost:5174", // Vite
+      "http://localhost:5173", // Vite
       // "http://localhost:3000", // CRA (optional)
     ],
     credentials: true,
