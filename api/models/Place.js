@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 
 
-
+// const placeSchema = new mongoose.Schema({...}, { timestamps: true });
 const placeSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
@@ -19,7 +19,21 @@ const placeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  photos: [{ type: String }],
+  // photos: [{ type: String }],
+  photos: [
+  {
+    url: String,
+    hash: String,
+    public_id: String
+  }
+],
+coverPhoto: String,
+isDeleted: {
+  type: Boolean,
+  default: false
+},
+
+
   description: {
     type: String,
   },
@@ -33,8 +47,13 @@ const placeSchema = new mongoose.Schema({
   price: {
     type: Number,
   },
-});
+},
+ { 
+    timestamps: true 
+  }
+);
 
 const Place = mongoose.model("Place", placeSchema);
 
 module.exports = Place;
+

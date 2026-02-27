@@ -5,16 +5,17 @@ const connectWithDB = require("./config/db");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const cloudinary = require("cloudinary").v2;
+const adminRoutes = require("./routes/admin");
 
 // connect with database
 connectWithDB();
 
 // cloudinary configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// cloudinary.config({
+//   cloud_name: process.env.CLOUDINARY_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET,
+// });
 
 const app = express();
 
@@ -61,8 +62,10 @@ app.use(
 // app.use("/api/listings", require("./routes/place"));
 // ✅ THIS LINE MUST EXIST
 app.use("/api", require("./routes"));
-app.use("/api/upload", require("./routes/upload"));
-
+// app.use("/api/upload", require("./routes/upload"));
+app.use("/api/admin", adminRoutes);
+// app.use("/api/places", placeRoutes);
+// app.use("/api", adminRoutes);
 
 
 app.listen(process.env.PORT || 8000, (err) => {

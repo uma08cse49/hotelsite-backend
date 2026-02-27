@@ -16,6 +16,7 @@ router.get('/', (req, res) => {
 router.post('/upload-by-link', async (req, res) => {
   try {
     const { link } = req.body;
+
     let result = await cloudinary.uploader.upload(link, {
       folder: 'Airbnb/Places',
     });
@@ -28,28 +29,47 @@ router.post('/upload-by-link', async (req, res) => {
   }
 });
 
+
+// router.post("/upload-by-link/:placeId", async (req, res) => {
+//   const { link } = req.body;
+//   const { placeId } = req.params;
+
+//   const result = await cloudinary.uploader.upload(link);
+
+//   const place = await Place.findById(placeId);
+
+//   place.photos.push({
+//     url: result.secure_url,
+//     public_id: result.public_id,
+//   });
+
+//   await place.save();
+
+//   res.json({ photos: place.photos });
+// });
+
 // upload images from local device
-router.post('/upload', upload.array('photos', 100), async (req, res) => {
-  try {
-    let imageArray = [];
+// router.post('/upload', upload.array('photos', 100), async (req, res) => {
+//   try {
+//     let imageArray = [];
 
-    for (let index = 0; index < req.files.length; index++) {
-      let { path } = req.files[index];
-      let result = await cloudinary.uploader.upload(path, {
-        folder: 'Airbnb/Places',
-      });
-      imageArray.push(result.secure_url);
-    }
+//     for (let index = 0; index < req.files.length; index++) {
+//       let { path } = req.files[index];
+//       let result = await cloudinary.uploader.upload(path, {
+//         folder: 'Airbnb/Places',
+//       });
+//       imageArray.push(result.secure_url);
+//     }
 
-    res.status(200).json(imageArray);
-  } catch (error) {
-    console.log('Error: ', error);
-    res.status(500).json({
-      error,
-      message: 'Internal server error',
-    });
-  }
-});
+//     res.status(200).json(imageArray);
+//   } catch (error) {
+//     console.log('Error: ', error);
+//     res.status(500).json({
+//       error,
+//       message: 'Internal server error',
+//     });
+//   }
+// });
 
 
 router.use('/user', require('./user'));

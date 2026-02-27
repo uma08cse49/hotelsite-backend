@@ -4,6 +4,11 @@ const cloudinary = require("../utils/cloudinary");
 const path = require("path");
 const fs = require("fs");
 
+
+const upload = multer({
+  dest: "uploads/",
+});
+
 const router = express.Router();
 // const upload = multer({ dest: "/tmp" });
 
@@ -14,7 +19,7 @@ if (!fs.existsSync(tempDir)) {
 }
 
 // ✅ use Windows-safe temp folder
-const upload = multer({ dest: tempDir });
+// const upload = multer({ dest: tempDir });    //multer is a middleware used for handling file upload
 
 // router.post("/", upload.single("photos"), async (req, res) => {
 //   try {
@@ -33,9 +38,42 @@ const upload = multer({ dest: tempDir });
 //   }
 // });
 
+console.log("FILES:", req.files);
+
+
+
+// router.post("/", upload.array("photos", 10), async (req, res) => {
+//   try {
+//     const uploadedImages = [];
+   
+
+//     for (const file of req.files) {
+//       console.log("REQ.FILE:", req.file);
+//       console.log("REQ.FILES:", req.files);
+
+//       const result = await cloudinary.uploader.upload(file.path, {
+//         folder: "Airbnb/Places",
+//       });
+      
+//       uploadedImages.push(result.secure_url);
+//     }
+
+    
+
+//     res.json(uploadedImages); // ✅ ARRAY of URLs
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Image upload failed" });
+//   }
+// });
+
 
 router.post("/", upload.array("photos", 10), async (req, res) => {
   try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
     const uploadedImages = [];
 
     for (const file of req.files) {
@@ -46,9 +84,9 @@ router.post("/", upload.array("photos", 10), async (req, res) => {
       uploadedImages.push(result.secure_url);
     }
 
-    res.json(uploadedImages); // ✅ ARRAY of URLs
+    res.json(uploadedImages);
   } catch (err) {
-    console.error(err);
+    console.error("UPLOAD ERROR:", err);
     res.status(500).json({ message: "Image upload failed" });
   }
 });
