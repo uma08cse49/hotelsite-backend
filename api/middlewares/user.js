@@ -17,6 +17,7 @@ exports.isLoggedIn = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = await User.findById(decoded.id);
         next();
+        console.log("SECRET:", process.env.JWT_SECRET);
     } catch (error) {
         // Handle JWT verification error
         console.error('JWT verification error:', error);

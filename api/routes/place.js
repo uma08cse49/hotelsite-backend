@@ -91,6 +91,7 @@
 const express = require('express');
 const router = express.Router();
 const Place = require("../models/Place");
+const placeController = require("../controllers/placeController");
 
 // GET all places
 router.get("/", async (req, res) => {
@@ -186,6 +187,11 @@ router.get("/", async (req, res) => {
   const places = await Place.find({ isDeleted: false });
   res.json(places);
 });
+
+// UPDATE PLACE
+router.put("/update-place", placeController.updatePlace);
+
+module.exports = router;
 
 
 module.exports = router;

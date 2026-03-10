@@ -68,7 +68,7 @@ console.log("FILES:", req.files);
 // });
 
 
-router.post("/", upload.array("photos", 10), async (req, res) => {
+router.post("/upload", upload.array("photos", 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
@@ -81,7 +81,11 @@ router.post("/", upload.array("photos", 10), async (req, res) => {
         folder: "Airbnb/Places",
       });
 
-      uploadedImages.push(result.secure_url);
+      // uploadedImages.push(result.secure_url);
+       uploadedImages.push({
+      url: result.secure_url,
+      public_id: result.public_id
+      });
     }
 
     res.json(uploadedImages);

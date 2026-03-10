@@ -1,5 +1,7 @@
 const Place = require('../models/Place');
 
+console.log("UPDATE PLACE API HIT");
+
 // Adds a place in the DB
 exports.addPlace = async (req, res) => {
   try {
@@ -50,46 +52,127 @@ exports.userPlaces = async (req, res) => {
 };
 
 // Updates a place
+// exports.updatePlace = async (req, res) => {
+//   try {
+//     const userData = req.user;
+//     const userId = userData.id;
+//     const {
+//       id,
+//       title,
+//       address,
+//       addedPhotos,
+//       description,
+//       perks,
+//       extraInfo,
+//       maxGuests,
+//       price,
+//     } = req.body;
+
+//     // const place = await Place.findById(id);
+//     const place = await Place.findByIdAndUpdate(
+//       id,
+//       data,
+//       { new: true }
+//     );
+
+//     res.json({
+//       success: true,
+//       place
+//     });
+    
+//     if (userId === place.owner.toString()) {
+//       place.set({
+//         title,
+//         address,
+//         photos: addedPhotos,
+//         description,
+//         perks,
+//         extraInfo,
+//         maxGuests,
+//         price,
+//       });
+//       await place.save();
+//       res.status(200).json({
+//         message: 'place updated!',
+//       });
+//     }
+//   } catch (err) {
+//     res.status(500).json({
+//       message: 'Internal server error',
+//       error: err,
+//     });
+//   }
+// };
+
+
+// exports.updatePlace = async (req, res) => {
+//   try {
+
+//     const { id, photos, ...otherData } = req.body;
+
+//     const place = await Place.findById(id);
+
+//     if (!place) {
+//       return res.status(404).json({ message: "Place not found" });
+//     }
+
+//     // replace photos with new array
+//     place.photos = photos;
+
+//     // update other fields
+//     Object.assign(place, otherData);
+
+//     await place.save();
+
+//     res.json({
+//       success: true,
+//       place,
+//     });
+
+//   } catch (error) {
+//     console.log("UPDATE PLACE ERROR:", error);
+//     res.status(500).json({ message: "Update failed" });
+//   }
+// };
+
+
 exports.updatePlace = async (req, res) => {
+  
   try {
-    const userData = req.user;
-    const userId = userData.id;
-    const {
-      id,
-      title,
-      address,
-      addedPhotos,
-      description,
-      perks,
-      extraInfo,
-      maxGuests,
-      price,
-    } = req.body;
+
+    console.log("BODY:", req.body);
+
+    const { id, photos, ...otherData } = req.body;
 
     const place = await Place.findById(id);
-    if (userId === place.owner.toString()) {
-      place.set({
-        title,
-        address,
-        photos: addedPhotos,
-        description,
-        perks,
-        extraInfo,
-        maxGuests,
-        price,
-      });
-      await place.save();
-      res.status(200).json({
-        message: 'place updated!',
-      });
+
+    if (!place) {
+      return res.status(404).json({ message: "Place not found" });
     }
-  } catch (err) {
-    res.status(500).json({
-      message: 'Internal server error',
-      error: err,
+
+    // update other fields first
+    Object.assign(place, otherData);
+
+    // then replace photos completely
+    place.photos = photos || [];
+
+    await place.save();
+
+    console.log("UPDATED PHOTOS IN DB:", place.photos);
+
+    res.json({
+      success: true,
+      place,
     });
+
+  } catch (error) {
+    console.log("UPDATE PLACE ERROR:", error);
+    res.status(500).json({ message: "Update failed" });
   }
 };
+
+
+
 
 // Returns all the places in DB
 exports.getPlaces = async (req, res) => {
