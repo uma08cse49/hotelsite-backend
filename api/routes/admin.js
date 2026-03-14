@@ -96,8 +96,9 @@ const path = require("path");
 
 
 router.get("/test", (req, res) => {
-  console.log("ADMIN TEST ROUTE HIT");
-  res.json({ message: "Admin working" });
+  // console.log("ADMIN TEST ROUTE HIT");
+  // res.json({ message: "Admin working" });
+  res.send("Places route working");
 });
 
 
@@ -247,18 +248,65 @@ router.post("/upload/:id", upload.array("photos", 10),adminAuth, async (req, res
     // place.photos = [...(place.photos || []), ...uploadedPhotos];
 
     // Replace old photos
-    place.photos = uploadedPhotos;
+    // place.photos = uploadedPhotos;
+    place.photos = [...place.photos, ...uploadedPhotos];
 
     await place.save();
     console.log("FILES:", req.files);
 
-    res.json({ success: true, photos: place.photos });
+    // res.json({ success: true, photos: place.photos });
+    res.json({ success: true, photos: uploadedPhotos });
 
   } catch (error) {
     console.log("ADMIN UPLOAD ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
+
+router.post("/upload", upload.array("photos", 10), adminAuth, async (req, res) => {
+
+  console.log("UPLOAD ROUTE HIT");
+  
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    const uploadedImages = [];
+
+    for (const file of req.files) {
+      // const result = await cloudinary.uploader.upload_stream(file.path, {
+      //   folder: "Airbnb/Places",
+      // });
+
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "Airbnb/Places" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        stream.end(file.buffer);
+      });
+
+      // uploadedImages.push(result.secure_url);
+       uploadedImages.push({
+      url: result.secure_url,
+      public_id: result.public_id,
+      category: req.body.category
+      });
+    }
+
+    res.json(uploadedImages);
+  } catch (err) {
+    console.error("UPLOAD ERROR:", err);
+    res.status(500).json({ message: "Image upload failed" });
+  }
+});
+
 
 // router.delete("/admin/place/:id", async (req, res) => {
 //   try {
@@ -371,6 +419,20 @@ router.post("/remove-photo/:id", async (req, res) => {
 
   res.json({ success: true });
 
+});
+
+router.put('/places/:id', async (req, res) => {
+  const {id} = req.params;
+
+  const place = await Place.findById(id);
+
+  if (!place) {
+    return res.status(404).json({error: "Place not found"});
+  }
+
+  const updatedPlace = await Place.findByIdAndUpdate(id, req.body, {new: true});
+
+  res.json(updatedPlace);
 });
 
 

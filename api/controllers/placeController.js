@@ -39,14 +39,30 @@ exports.addPlace = async (req, res) => {
 };
 
 // Returns user specific places
+// exports.userPlaces = async (req, res) => {
+//   try {
+//     const userData = req.user;
+//     const id = userData.id;
+//     res.status(200).json(await Place.find({ owner: id }));
+//   } catch (err) {
+//     res.status(500).json({
+//       message: 'Internal serever error',
+//     });
+//   }
+// };
+
 exports.userPlaces = async (req, res) => {
   try {
-    const userData = req.user;
-    const id = userData.id;
-    res.status(200).json(await Place.find({ owner: id }));
+    const places = await Place.find({ isDeleted: false });
+
+    res.json({
+      places
+    });
+
   } catch (err) {
+    console.log(err);
     res.status(500).json({
-      message: 'Internal serever error',
+      message: "Server error"
     });
   }
 };
@@ -105,6 +121,8 @@ exports.userPlaces = async (req, res) => {
 // };
 
 
+// =================================================================================================
+
 // exports.updatePlace = async (req, res) => {
 //   try {
 
@@ -135,42 +153,69 @@ exports.userPlaces = async (req, res) => {
 //   }
 // };
 
+// exports.updatePlace = async (req, res) => {
+//   try {
+
+//     console.log("BODY:", req.body);
+
+//     const { id, photos, ...otherData } = req.body;
+
+//     const updatedPlace = await Place.findByIdAndUpdate(
+//       id,
+//       {
+//         ...otherData,
+//         photos: photos || []
+//       },
+//       { new: true }
+//     );
+
+//     if (!updatedPlace) {
+//       return res.status(404).json({ message: "Place not found" });
+//     }
+
+//     console.log("UPDATED PLACE:", updatedPlace);
+
+//     res.json({
+//       success: true,
+//       place: updatedPlace
+//     });
+
+//   } catch (error) {
+//     console.log("UPDATE PLACE ERROR:", error);
+//     res.status(500).json({ message: "Update failed" });
+//   }
+// };
+
 
 exports.updatePlace = async (req, res) => {
-  
   try {
+    console.log("UPDATE CONTROLLER HIT");
 
+    console.log("PARAM ID:", req.params.id);
     console.log("BODY:", req.body);
 
-    const { id, photos, ...otherData } = req.body;
+    const { id } = req.params;
 
-    const place = await Place.findById(id);
-
-    if (!place) {
-      return res.status(404).json({ message: "Place not found" });
-    }
-
-    // update other fields first
-    Object.assign(place, otherData);
-
-    // then replace photos completely
-    place.photos = photos || [];
-
-    await place.save();
-
-    console.log("UPDATED PHOTOS IN DB:", place.photos);
+    const updatedPlace = await Place.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true }
+    );
+     console.log("UPDATED PLACE:", updatedPlace);
 
     res.json({
       success: true,
-      place,
+      place: updatedPlace
     });
 
   } catch (error) {
-    console.log("UPDATE PLACE ERROR:", error);
-    res.status(500).json({ message: "Update failed" });
+    res.status(500).json({ error: "Update failed" });
   }
 };
 
+
+
+// ==================================================================================================
 
 
 

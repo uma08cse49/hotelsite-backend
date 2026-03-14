@@ -22,9 +22,17 @@ const placeSchema = new mongoose.Schema({
   // photos: [{ type: String }],
   photos: [
   {
-    url: String,
-    hash: String,
-    public_id: String
+    // url: String,
+    // hash: String,
+    // public_id: String
+
+     url: { type: String, required: true },
+     hash: String,
+     public_id: String,
+     category: {
+      type: String,
+      default: "Other"
+    }
   }
 ],
 coverPhoto: String,

@@ -65,8 +65,8 @@ app.use(
 app.use("/api", require("./routes"));
 // app.use("/api/upload", require("./routes/upload"));
 app.use("/api/admin", adminRoutes);
-app.use("/places", placeRoutes);
-// app.use("/api/places", placeRoutes);
+// app.use("/places", placeRoutes);
+app.use("/api/places", placeRoutes);
 // app.use("/api", adminRoutes);
 
 
