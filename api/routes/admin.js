@@ -158,13 +158,15 @@ router.get("/test", (req, res) => {
 // });
 
 
-router.post("/login", async (req, res) => {
+
+// login route For Admin login
+router.post("/admin/login", async (req, res) => {
   try {
 
     console.log("LOGIN SECRET:", process.env.JWT_SECRET);
     const { email, password } = req.body;
 
-    const admin = await User.findOne({ email, isAdmin: true });
+    const admin = await User.findOne({ email, isAdmin: true }).select("+password");
 
     if (!admin) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -183,6 +185,68 @@ router.post("/login", async (req, res) => {
     );
 
     res.json({ token });
+
+  } catch (err) {
+    console.log("LOGIN ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// login route For user login
+
+router.post("/login", async (req, res) => {
+  try {
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(400).json(
+        { 
+          message: "Invalid credentials" 
+        });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      // return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({
+      success: false,
+      message: "Invalid credentials"
+    });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // res.json({
+    //   token,
+    //   user: {
+    //     id: user._id,
+    //     name: user.name,
+    //     email: user.email,
+    //     picture: user.picture,
+    //     isAdmin: user.isAdmin
+    //   }
+    // });
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        isAdmin: user.isAdmin
+      }
+    });
 
   } catch (err) {
     console.log("LOGIN ERROR:", err);
@@ -434,6 +498,11 @@ router.put('/places/:id', async (req, res) => {
 
   res.json(updatedPlace);
 });
+
+
+
+
+
 
 
 

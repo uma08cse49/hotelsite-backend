@@ -322,8 +322,8 @@ router.get("/user-places", async (req, res) => {
 // GET ALL PLACES
 router.get("/", async (req, res) => {
   try {
-    const places = await Place.find({ isDeleted: false });
-    res.json( places );
+    const places = await Place.find({ isDeleted: false});
+    res.json({places});
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch places" });
   }
@@ -398,7 +398,7 @@ router.post("/places", async (req, res) => {
 
 });
 
-module.exports = router;
+// module.exports = router;
 
 
 // UPDATE PLACE
@@ -429,6 +429,29 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Delete failed" });
   }
+});
+
+// SOFT DELETE
+
+router.put("/delete-place/:id", async (req, res) => {
+  await Place.findByIdAndUpdate(req.params.id, {
+    isDeleted: true
+  });
+
+  res.json({ message: "Place deleted" });
+});
+
+// UNPUBLISH LISTING
+
+router.put("/toggle-publish/:id", async (req, res) => {
+
+  const place = await Place.findById(req.params.id);
+
+  place.isPublished = !place.isPublished;
+
+  await place.save();
+
+  res.json(place);
 });
 
 module.exports = router;

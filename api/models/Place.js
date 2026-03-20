@@ -40,6 +40,15 @@ isDeleted: {
   type: Boolean,
   default: false
 },
+isPublished: {
+  type: Boolean,
+  default: true
+},
+isActive: {
+  type: Boolean,
+  default: true
+},
+city: String, 
 
 
   description: {

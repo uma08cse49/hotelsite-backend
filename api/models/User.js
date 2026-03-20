@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+    select: false, // 🔒 hides password when fetching user
   },
   picture: {
     type: String,
@@ -26,11 +27,18 @@ const userSchema = new mongoose.Schema({
   type: Boolean,
   default: false,
 }
-});
+},{ timestamps: true });
 
 // encrypt password before saving it into the DB
 userSchema.pre("save", async function (next) {
+
+   // Only hash if password is modified
+  if (!this.isModified("password")) {
+    return next();
+  }
+
   this.password = await bcrypt.hash(this.password, 10)
+  next();
 })
 
 // create and return jwt token

@@ -64,9 +64,11 @@ app.use(
 // ✅ THIS LINE MUST EXIST
 app.use("/api", require("./routes"));
 // app.use("/api/upload", require("./routes/upload"));
+app.use("/api", require("./routes/userAuth"));
 app.use("/api/admin", adminRoutes);
 // app.use("/places", placeRoutes);
 app.use("/api/places", placeRoutes);
+// app.use("/api", require("./routes/userAuth"));
 // app.use("/api", adminRoutes);
 
 
