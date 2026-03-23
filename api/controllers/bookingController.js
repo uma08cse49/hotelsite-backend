@@ -4,24 +4,33 @@ const Booking = require('../models/Booking');
 exports.createBookings = async (req, res) => {
   try {
     const userData = req.user;
-    const { place, checkIn, checkOut, numOfGuests, name, phone, price } =
+    const { place, checkIn, checkOut, noOfGuests, name, phone, price } =
       req.body;
+
+    // ✅ Validation (IMPORTANT)
+    if (!place || !checkIn || !checkOut) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
 
     const booking = await Booking.create({
       user: userData.id,
       place,
-      checkIn,
-      checkOut,
-      numOfGuests,
+      checkIn: new Date(checkIn),
+      checkOut: new Date(checkOut),
+      noOfGuests,
       name,
       phone,
       price,
     });
 
+
     res.status(200).json({
       booking,
+      success: true,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: 'Internal server error',
       error: err,

@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const cloudinary = require("cloudinary").v2;
 const adminRoutes = require("./routes/admin");
 const placeRoutes = require("./routes/place");
+const bookingRoutes = require('./routes/booking');
 
 // connect with database
 connectWithDB();
@@ -68,6 +69,8 @@ app.use("/api", require("./routes/userAuth"));
 app.use("/api/admin", adminRoutes);
 // app.use("/places", placeRoutes);
 app.use("/api/places", placeRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/uploads', express.static(__dirname + '/uploads'));
 // app.use("/api", require("./routes/userAuth"));
 // app.use("/api", adminRoutes);
 
