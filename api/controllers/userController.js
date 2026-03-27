@@ -43,6 +43,13 @@ exports.register = async (req, res) => {
 // Login/SignIn user
 exports.login = async (req, res) => {
   try {
+
+        res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax',   // ✅ IMPORTANT
+      secure: false,     // ✅ for localhost
+    });
+    
     const { email, password } = req.body;
 
     // check for presence of email and password

@@ -20,6 +20,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const upload = multer({ storage: multer.memoryStorage() });
 const path = require("path");
+// const storage = multer.memoryStorage(); // ✅ IMPORTANT
+
 
 // const absolutePath = path.resolve(file.path);
 // // Upload images to a place
@@ -160,7 +162,7 @@ router.get("/test", (req, res) => {
 
 
 // login route For Admin login
-router.post("/admin/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
 
     console.log("LOGIN SECRET:", process.env.JWT_SECRET);
@@ -192,67 +194,67 @@ router.post("/admin/login", async (req, res) => {
   }
 });
 
-// login route For user login
+// // login route For user login
 
-router.post("/login", async (req, res) => {
-  try {
+// router.post("/login", async (req, res) => {
+//   try {
 
-    const { email, password } = req.body;
+//     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select("+password");
+//     const user = await User.findOne({ email }).select("+password");
 
-    if (!user) {
-      return res.status(400).json(
-        { 
-          message: "Invalid credentials" 
-        });
-    }
+//     if (!user) {
+//       return res.status(400).json(
+//         { 
+//           message: "Invalid credentials" 
+//         });
+//     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+//     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
-      // return res.status(400).json({ message: "Invalid credentials" });
-      return res.status(400).json({
-      success: false,
-      message: "Invalid credentials"
-    });
-    }
+//     if (!isMatch) {
+//       // return res.status(400).json({ message: "Invalid credentials" });
+//       return res.status(400).json({
+//       success: false,
+//       message: "Invalid credentials"
+//     });
+//     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+//     const token = jwt.sign(
+//       { id: user._id },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
 
-    // res.json({
-    //   token,
-    //   user: {
-    //     id: user._id,
-    //     name: user.name,
-    //     email: user.email,
-    //     picture: user.picture,
-    //     isAdmin: user.isAdmin
-    //   }
-    // });
+//     // res.json({
+//     //   token,
+//     //   user: {
+//     //     id: user._id,
+//     //     name: user.name,
+//     //     email: user.email,
+//     //     picture: user.picture,
+//     //     isAdmin: user.isAdmin
+//     //   }
+//     // });
 
-    res.json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        picture: user.picture,
-        isAdmin: user.isAdmin
-      }
-    });
+//     res.json({
+//       success: true,
+//       message: "Login successful",
+//       token,
+//       user: {
+//         id: user._id,
+//         name: user.name,
+//         email: user.email,
+//         picture: user.picture,
+//         isAdmin: user.isAdmin
+//       }
+//     });
 
-  } catch (err) {
-    console.log("LOGIN ERROR:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+//   } catch (err) {
+//     console.log("LOGIN ERROR:", err);
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
 
 router.post("/upload/:id", upload.array("photos", 10),adminAuth, async (req, res) => {
@@ -283,7 +285,8 @@ router.post("/upload/:id", upload.array("photos", 10),adminAuth, async (req, res
 
             uploadedPhotos.push(
               { url: result.secure_url,
-                public_id: result.public_id 
+                public_id: result.public_id ,
+                category: req.body.category
               });
             console.log("Uploaded files:", req.files);
             console.log("Cloudinary result:", result);
@@ -328,9 +331,10 @@ router.post("/upload/:id", upload.array("photos", 10),adminAuth, async (req, res
 });
 
 
-router.post("/upload", upload.array("photos", 10), adminAuth, async (req, res) => {
+router.post("/upload", adminAuth, upload.array("photos", 10),  async (req, res) => {
 
   console.log("UPLOAD ROUTE HIT");
+  console.log("FILES:", req.files);
   
   try {
     if (!req.files || req.files.length === 0) {
@@ -340,9 +344,13 @@ router.post("/upload", upload.array("photos", 10), adminAuth, async (req, res) =
     const uploadedImages = [];
 
     for (const file of req.files) {
-      // const result = await cloudinary.uploader.upload_stream(file.path, {
-      //   folder: "Airbnb/Places",
-      // });
+    //   const result = await cloudinary.uploader.upload_stream(file.path, {
+    //     folder: "Airbnb/Places",
+    //   });
+
+    // const result = await cloudinary.uploader.upload(file.path, {
+    //     folder: "Airbnb/Places",
+    //   });
 
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -360,11 +368,38 @@ router.post("/upload", upload.array("photos", 10), adminAuth, async (req, res) =
        uploadedImages.push({
       url: result.secure_url,
       public_id: result.public_id,
-      category: req.body.category
+      category: req.body.category || "Other"
       });
+
+       // OPTIONAL: attach to place
+    // const place = await Place.findById(req.params.id);
+    // if (place) {
+    //   place.photos = [...(place.photos || []), ...uploadedImages];
+    //   // await place.save();
+    // }
+
+    // ✅ ONLY SAVE IF ID EXISTS
+    // if (req.params.id) {
+    //   const place = await Place.findById(req.params.id);
+
+    //   if (place) {
+    //     place.photos = [
+    //       ...(place.photos || []),
+    //       ...uploadedImages,
+    //     ];
+
+        // await place.save();
+      // }
+    // }
+
+      console.log("FILE BUFFER:", file.buffer ? "YES" : "NO");
+
+      console.log("Uploaded:", result.secure_url);
+      console.log("Public ID:", result.public_id);
     }
 
     res.json(uploadedImages);
+  
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     res.status(500).json({ message: "Image upload failed" });
@@ -391,22 +426,39 @@ router.delete("/place/:id", adminAuth,async (req, res) => {
     }
 
     // 🔥 Delete images from Cloudinary
-    for (const photo of place.photos) {
-      console.log("Deleting public_id:", photo.public_id);
-      if (photo.public_id) {
-       const result= await cloudinary.uploader.destroy(photo.public_id);
-       console.log("Cloudinary result:", result);
-      }
-    }
+    // for (const photo of place.photos) {
+    //   console.log("Deleting public_id:", photo.public_id);
+    //   if (photo.public_id) {
+    //    const result= await cloudinary.uploader.destroy(photo.public_id);
+    //    console.log("Cloudinary result:", result);
+    //   }
+    // }
+
+    // if (photo.public_id) {
+    //    const result= await cloudinary.uploader.destroy(photo.public_id);
+    //    console.log("Cloudinary result:", result);
+    //   }
+
+    // for (const photo of place.photos || []) {
+    //   if (photo && photo.public_id) {
+    //     try {
+    //       await cloudinary.uploader.destroy(photo.public_id);
+    //     } catch (err) {
+    //       console.log("Cloudinary delete error:", err);
+    //     }
+    //   }
+    // }
 
     // 🔥 Soft delete
     place.isDeleted = true;
     await place.save();
 
+    console.log("UPDATED PLACE:", place); // 👈 ADD THIS
+
     res.json({ message: "Place soft deleted successfully" });
 
   } catch (err) {
-    console.log("Cloudinary result:", result);
+    // console.log("Cloudinary result:", result);
     res.status(500).json({ error: err.message });
   }
 });
@@ -474,14 +526,32 @@ router.post("/remove-photo/:id", async (req, res) => {
 
   if (!place) return res.status(404).json({ message: "Place not found" });
 
+   // Delete from Cloudinary
   if (photo?.public_id) {
     await cloudinary.uploader.destroy(photo.public_id);
   }
 
-  place.photos = [];
-  await place.save();
+  console.log("Before:", place.photos.length);
 
-  res.json({ success: true });
+  // place.photos = [];
+
+   // ✅ REMOVE ONLY SELECTED PHOTO
+    place.photos = place.photos.filter(
+      (p) => p.public_id !== photo.public_id
+    );
+
+       // ✅ IMPORTANT: HANDLE COVER PHOTO
+    if (place.coverPhoto === photo.url) {
+      place.coverPhoto = ""; // ✅ make it empty
+    }
+
+  await place.save();
+  console.log("Deleting:", photo.public_id);
+  console.log("After:", place.photos.length);
+
+   res.json({ success: true, updatedPlace: place, });
+
+  // res.json({ success: true ,photos: place.photos});
 
 });
 

@@ -53,7 +53,10 @@ exports.addPlace = async (req, res) => {
 
 exports.userPlaces = async (req, res) => {
   try {
-    const places = await Place.find({ isDeleted: false });
+    // const places = await Place.find({ isDeleted: false });
+    const places = await Place.find();
+
+    console.log("PLACES FROM DB:", places);
 
     res.json({
       places

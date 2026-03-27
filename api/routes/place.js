@@ -304,19 +304,22 @@
 const express = require("express");
 const router = express.Router();
 const Place = require("../models/Place");
+const { userPlaces } = require("../controllers/placeController");
 
 
 
 
 // GET USER PLACES
-router.get("/user-places", async (req, res) => {
-  try {
-    const places = await Place.find({ isDeleted: false });
-    res.json({ places });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch places" });
-  }
-});
+// router.get("/user-places", async (req, res) => {
+//   try {
+//     // const places = await Place.find({ isDeleted: false });
+//     const places = await Place.find();
+//     res.json({ places });
+//   } catch (err) {
+//     res.status(500).json({ error: "Failed to fetch places" });
+//   }
+// });
+router.get("/user-places", userPlaces);
 
 
 // GET ALL PLACES
@@ -360,18 +363,63 @@ router.post("/", async (req, res) => {
   }
 });
 
+// router.post("/places", async (req, res) => {
+
+//   try {
+
+//     const {
+//       title,
+//       address,
+//       description,
+//       price,
+//       maxGuests,
+//       photos
+//     } = req.body;
+
+//     const place = await Place.create({
+//       title,
+//       address,
+//       description,
+//       price,
+//       maxGuests,
+//       photos
+//     });
+
+//     res.json({
+//       success: true,
+//       place
+//     });
+
+//   } catch (error) {
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+
+//   }
+
+// });
+
 router.post("/places", async (req, res) => {
-
   try {
-
     const {
       title,
       address,
       description,
       price,
       maxGuests,
-      photos
+      photos,
+      coverPhoto
     } = req.body;
+
+    const formattedPhotos = (photos || [])
+      .filter((p) => p && (p.url || p.secure_url))
+      .map((photo) => ({
+        url: photo.url || photo.secure_url,
+        public_id: photo.public_id,
+        category: photo.category || "Other",
+      }));
 
     const place = await Place.create({
       title,
@@ -379,34 +427,74 @@ router.post("/places", async (req, res) => {
       description,
       price,
       maxGuests,
-      photos
+      photos: formattedPhotos,
+      coverPhoto: coverPhoto || "",
     });
 
     res.json({
       success: true,
-      place
+      place,
     });
 
   } catch (error) {
+    console.log("CREATE ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
-
   }
-
 });
 
-// module.exports = router;
-
-
 // UPDATE PLACE
+// router.put("/:id", async (req, res) => {
+//   try {
+//     const place = await Place.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
+
+//     res.json({
+//       success: true,
+//       place,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: "Update failed" });
+//   }
+// });
+
 router.put("/:id", async (req, res) => {
   try {
+    const {
+      title,
+      address,
+      description,
+      price,
+      maxGuests,
+      photos,
+      coverPhoto
+    } = req.body;
+
+    const formattedPhotos = (photos || [])
+      .filter((p) => p && (p.url || p.secure_url))
+      .map((photo) => ({
+        url: photo.url || photo.secure_url,
+        public_id: photo.public_id,
+        category: photo.category || "Other",
+      }));
+
     const place = await Place.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        title,
+        address,
+        description,
+        price,
+        maxGuests,
+        photos: formattedPhotos,
+        coverPhoto: coverPhoto || "",
+      },
       { new: true }
     );
 
@@ -414,8 +502,13 @@ router.put("/:id", async (req, res) => {
       success: true,
       place,
     });
+
   } catch (error) {
-    res.status(500).json({ error: "Update failed" });
+    console.log("UPDATE ERROR:", error);
+
+    res.status(500).json({
+      error: "Update failed",
+    });
   }
 });
 

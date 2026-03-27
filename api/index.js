@@ -21,7 +21,7 @@ connectWithDB();
 
 const app = express();
 
-app.use(cors()); // allow requests from any origin
+// app.use(cors()); // allow requests from any origin
 
 // For handling cookies
 app.use(cookieParser());
@@ -56,6 +56,7 @@ app.use(
       // "http://localhost:3000", // CRA (optional)
     ],
     credentials: true,
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   })
 );
 
